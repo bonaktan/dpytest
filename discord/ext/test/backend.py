@@ -964,13 +964,29 @@ def edit_message(
         message: discord.Message, **fields: dhttp.MultipartParameters
 ) -> _types.message.Message:
     data = facts.dict_from_object(message)
-    payload = fields["params"].payload
-    # TODO : do something for files and stuff.
-    # if params.files:
-    #     return self.request(r, files=params.files, form=params.multipart)
-    # else:
-    #     return self.request(r, json=params.payload)
-    data.update(payload)  # type: ignore[typeddict-item]
+    params = fields["params"]
+
+    if params.payload is not None:
+        data.update(params.payload)
+    elif params.multipart:
+        import json
+        for part in params.multipart:
+            if part.get('name') == 'payload_json':
+                data.update(json.loads(part['value']))
+                break
+
+    if params.files:
+        paths = []
+        for file in params.files:
+            path = pathlib.Path(f"./dpytest_{FakeHttp.fileno}.dat")
+            FakeHttp.fileno += 1
+            if file.fp.seekable():
+                file.fp.seek(0)
+            with open(path, "wb") as nfile:
+                nfile.write(file.fp.read())
+            paths.append((path, file.filename))
+        attachments = list(map(lambda x: make_attachment(*x), paths))
+        data["attachments"] = [facts.dict_from_object(a) for a in attachments]
 
     config = get_config()
     i = 0
