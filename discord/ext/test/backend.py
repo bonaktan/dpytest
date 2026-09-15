@@ -6,6 +6,7 @@
     This setup matches discord's actual setup, where an HTTP call triggers a change on the server,
     which is then sent back to the bot as an event which is parsed and dispatched.
 """
+from __future__ import annotations
 
 import asyncio
 import sys
@@ -160,6 +161,11 @@ class FakeHttp(dhttp.HTTPClient):
         if find is None:
             raise discord.errors.NotFound(FakeRequest(404, "Not Found"), "Unknown Channel")
         return find
+
+    async def get_all_guild_channels(self, guild_id: Snowflake) -> list[_types.channel.GuildChannel]:
+        locs = _get_higher_locs(1)
+        guild = locs["self"]
+        return [facts.dict_from_object(channel) for channel in guild.channels]
 
     async def start_private_message(self, user_id: Snowflake) -> _types.channel.DMChannel:
         locs = _get_higher_locs(1)
