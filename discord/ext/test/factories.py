@@ -419,6 +419,38 @@ def _from_voice_channel(channel: discord.VoiceChannel) -> _types.channel.VoiceCh
         'user_limit': channel.user_limit,
     }
 
+@dict_from_object.register(discord.Thread)
+def _from_thread(thread: discord.Thread) -> dict[str, Any]:
+    now = dt.datetime.now(tz=dt.timezone.utc).isoformat()
+    archive_ts = thread.archive_timestamp.isoformat() if thread.archive_timestamp else now
+    return {
+        'id': thread.id,
+        'guild_id': thread.guild.id,
+        'parent_id': thread.parent_id,
+        'owner_id': thread.owner_id,
+        'name': thread.name,
+        'type': thread.type.value,
+        'last_message_id': thread.last_message_id,
+        'message_count': thread.message_count,
+        'member_count': thread.member_count,
+        'rate_limit_per_user': thread.slowmode_delay,
+        'flags': thread.flags.value,
+        'total_message_sent': thread.total_message_sent,
+        'thread_metadata': {
+            'archived': thread.archived,
+            'auto_archive_duration': thread.auto_archive_duration,
+            'archive_timestamp': archive_ts,
+            'locked': thread.locked,
+            'invitable': thread.invitable if thread.invitable is not None else True,
+            'create_timestamp': now,
+        },
+        'member': {
+            'id': thread.id,
+            'user_id': thread.owner_id,
+            'join_timestamp': now,
+            'flags': 0,
+        } if thread.owner_id else None,
+    }
 
 @dict_from_object.register(discord.Message)
 def _from_message(message: discord.Message) -> _types.message.Message:
@@ -782,6 +814,50 @@ def make_dm_channel_dict(user: discord.User, id_num: int = -1, **kwargs: Any) ->
 
 def make_voice_channel_dict(name: str, id_num: int = -1, **kwargs: Any) -> _types.channel.VoiceChannel:
     return make_channel_dict(discord.ChannelType.voice.value, id_num, name=name, **kwargs)
+
+
+def make_thread_dict(
+    name: str,
+    guild_id: int,
+    parent_id: int,
+    owner_id: int,
+    id_num: int = -1,
+    auto_archive_duration: int = 1440,
+    rate_limit_per_user: int = 0,
+    thread_type: int = 11,  # 11 = public thread
+) -> dict[str, Any]:
+    if id_num < 0:
+        id_num = make_id()
+    now = dt.datetime.now(tz=dt.timezone.utc).isoformat()
+    return {
+        'id': id_num,
+        'guild_id': guild_id,
+        'parent_id': parent_id,
+        'owner_id': owner_id,
+        'name': name,
+        'type': thread_type,
+        'last_message_id': None,
+        'message_count': 0,
+        'member_count': 1,
+        'rate_limit_per_user': rate_limit_per_user,
+        'flags': 0,
+        'total_message_sent': 0,
+        'thread_metadata': {
+            'archived': False,
+            'auto_archive_duration': auto_archive_duration,
+            'archive_timestamp': now,
+            'locked': False,
+            'invitable': True,
+            'create_timestamp': now,
+        },
+        'member': {
+            'id': id_num,
+            'user_id': owner_id,
+            'join_timestamp': now,
+            'flags': 0,
+        },
+        'newly_created': True,
+    }
 
 
 # TODO: Convert reactions, activity, and application to a dict.

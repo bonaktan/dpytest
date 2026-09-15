@@ -138,6 +138,27 @@ class FakeHttp(dhttp.HTTPClient):
             )
         return facts.dict_from_object(channel)
 
+    async def start_thread_with_message(
+        self,
+        channel_id: Snowflake,
+        message_id: Snowflake,
+        *,
+        name: str,
+        auto_archive_duration: Literal[60, 1440, 4320, 10080],
+        rate_limit_per_user: int | None = None,
+        reason: str | None = None,
+    ) -> _types.thread.Thread:
+        locs = _get_higher_locs(1)
+        message = locs["self"]
+        channel = message.channel  # get it from the message, not locs
+
+        thread = make_thread(
+            name, channel, message.guild.me,
+            auto_archive_duration=auto_archive_duration,
+            rate_limit_per_user=rate_limit_per_user or 0,
+        )
+        return facts.dict_from_object(thread)
+        
     async def delete_channel(self, channel_id: Snowflake, *, reason: str | None = None) -> None:
         locs = _get_higher_locs(1)
         channel = locs["self"]
@@ -868,6 +889,32 @@ def update_text_channel(
 
     state = get_state()
     state.parse_channel_update(c_dict)
+
+
+def make_thread(
+    name: str,
+    channel: discord.TextChannel,
+    owner: discord.Member,
+    auto_archive_duration: int = 1440,
+    rate_limit_per_user: int = 0,
+    id_num: int = -1,
+) -> discord.Thread:
+    guild = channel.guild
+    data = facts.make_thread_dict(
+        name=name,
+        guild_id=guild.id,
+        parent_id=channel.id,
+        owner_id=owner.id,
+        id_num=id_num,
+        auto_archive_duration=auto_archive_duration,
+        rate_limit_per_user=rate_limit_per_user,
+    )
+    state = get_state()
+    state.parse_thread_create(data)
+    thread = guild.get_thread(int(data['id']))
+    if thread is None:
+        raise RuntimeError(f"Thread {data['id']} was not added to guild after parse_thread_create")
+    return thread
 
 
 def make_user(username: str, discrim: str | int, avatar: str | None = None,
