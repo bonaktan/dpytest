@@ -9,26 +9,41 @@
 from __future__ import annotations
 
 import asyncio
-import sys
-import logging
-import re
 import datetime
-
-import discord
-import discord.http as dhttp
+import logging
+import os
 import pathlib
+import re
+import sys
 import urllib.parse
 import urllib.request
+from typing import (
+    Any,
+    ClassVar,
+    Iterable,
+    Literal,
+    NamedTuple,
+    NoReturn,
+    Pattern,
+    Sequence,
+    overload,
+)
 
+import discord.http as dhttp
 from discord.types import member
-from requests import Response
-from typing import NamedTuple, Any, ClassVar, NoReturn, Literal, Pattern, overload, Sequence, Iterable
-
-from . import factories as facts, state as dstate, callbacks, websocket, _types
-from ._types import Undef, undefined
 from discord.types.snowflake import Snowflake
+from requests import Response
 
+import discord
+
+from . import _types, callbacks, websocket
+from . import factories as facts
+from . import state as dstate
+from ._types import Undef, undefined
 from .callbacks import CallbackEvent
+
+test_name = os.environ.get("PYTEST_CURRENT_TEST", "dpytest")
+safe_name = re.sub(r'[^\w]', '_', test_name)
 
 
 class BackendState(NamedTuple):
@@ -226,7 +241,7 @@ class FakeHttp(dhttp.HTTPClient):
         if params.files:
             paths = []
             for file in params.files:
-                path = pathlib.Path(f"./dpytest_{FakeHttp.fileno}.dat")
+                path = pathlib.Path(f"./{safe_name}_{FakeHttp.fileno}.dat")
                 FakeHttp.fileno += 1
                 if file.fp.seekable():
                     file.fp.seek(0)
@@ -1025,7 +1040,7 @@ def edit_message(
     if params.files:
         paths = []
         for file in params.files:
-            path = pathlib.Path(f"./dpytest_{FakeHttp.fileno}.dat")
+            path = pathlib.Path(f"./{safe_name}_{FakeHttp.fileno}.dat")
             FakeHttp.fileno += 1
             if file.fp.seekable():
                 file.fp.seek(0)
