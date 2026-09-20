@@ -42,9 +42,6 @@ from . import state as dstate
 from ._types import Undef, undefined
 from .callbacks import CallbackEvent
 
-test_name = os.environ.get("PYTEST_CURRENT_TEST", "dpytest")
-safe_name = re.sub(r'[^\w]', '_', test_name)
-
 
 class BackendState(NamedTuple):
     """
@@ -240,8 +237,10 @@ class FakeHttp(dhttp.HTTPClient):
         # ATTACHMENTS
         if params.files:
             paths = []
+            test_name = os.environ.get("PYTEST_CURRENT_TEST", "dpytest")
+            safe_name = re.sub(r'[^\w]', '_', test_name)
             for file in params.files:
-                path = pathlib.Path(f"./{safe_name}_{FakeHttp.fileno}.dat")
+                path = pathlib.Path(f"./dpytest_{safe_name}_{FakeHttp.fileno}.dat")
                 FakeHttp.fileno += 1
                 if file.fp.seekable():
                     file.fp.seek(0)
@@ -1040,7 +1039,8 @@ def edit_message(
     if params.files:
         paths = []
         for file in params.files:
-            path = pathlib.Path(f"./{safe_name}_{FakeHttp.fileno}.dat")
+            safe_name = re.sub(r'[^\w]', '_', os.environ.get("PYTEST_CURRENT_TEST", "dpytest"))
+            path = pathlib.Path(f"./dpytest_{safe_name}_{FakeHttp.fileno}.dat")
             FakeHttp.fileno += 1
             if file.fp.seekable():
                 file.fp.seek(0)
