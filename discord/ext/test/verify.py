@@ -16,6 +16,7 @@ from typing import TypeVar, Callable
 import discord
 
 from .runner import sent_queue, get_config
+from .legacy import require_unambiguous
 from .utils import embed_eq, activity_eq
 from ._types import Undef, undefined
 
@@ -86,6 +87,7 @@ class VerifyMessage:
             return f"<VerifyMessage expected=[{self._expectation()}]>"
 
     def __bool__(self) -> bool:
+        require_unambiguous()
         self._used = None
 
         if self._nothing:

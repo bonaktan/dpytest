@@ -2,12 +2,12 @@
 Dpytest Tutorials
 =================
 
-Here will be found tutorials for using dpytest practically, starting with the fundamentals
-and building up to more advanced usage. For now, there isn't much yet, but expect this to change
-as the library grows.
+Start with installation, then use the pytest and session guides for executable
+examples and the current simulator capabilities.
 
 .. toctree::
     :maxdepth: 2
-    :glob:
 
-    *
+    getting_started
+    using_pytest
+    session

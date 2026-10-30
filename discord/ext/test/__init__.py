@@ -8,6 +8,7 @@ __version__ = "0.7.0"
 from . import backend as backend
 
 from .runner import *
+from .session import Session as Session
 
 from .utils import embed_eq as embed_eq
 from .utils import activity_eq as activity_eq

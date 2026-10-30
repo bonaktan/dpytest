@@ -81,6 +81,21 @@ html_css_files = [
 
 add_module_names = False
 
+# The runtime type shim supplies placeholder objects for Discord payload types.
+# Sphinx 9 inspects their special attributes while evaluating annotations on
+# Python 3.14; do not let the shim invent values for those attributes.
+from discord.ext.test import _types
+
+
+def _doc_namespace_getattr(self, name):
+    if name.startswith('__') and name.endswith('__'):
+        raise AttributeError(name)
+    return self
+
+
+_types.OpenNamespace.__getattr__ = _doc_namespace_getattr
+_types.OpenNamespace.__repr__ = lambda self: 'DiscordPayload'
+
 # Set the autodoc options
 autodoc_default_options = {
     'members': None,

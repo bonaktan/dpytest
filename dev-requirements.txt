@@ -2,7 +2,8 @@ sphinx>=7
 pytest
 pytest-asyncio
 coverage~=7.2.7
-discord.py~=2.3
+git+https://github.com/Rapptz/discord.py
+davey
 invoke
 sphinx-automodapi
 build

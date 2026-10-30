@@ -24,7 +24,7 @@ from discord.ext.commands import CommandError
 from discord.ext.commands._types import BotT
 from typing_extensions import ParamSpec, TypeVar
 
-from . import backend as back, callbacks, _types
+from . import backend as back, callbacks, _types, legacy
 from .callbacks import CallbackEvent
 from .utils import PeekableQueue
 
@@ -65,6 +65,7 @@ def require_config(func: Callable[P, T]) -> Callable[P, T]:
     wrapper: _types.Wrapper[P, T]
 
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:  # type: ignore[no-redef]
+        legacy.require_unambiguous()
         if _cur_config is None:
             log.error("Attempted to make call before runner configured")
             raise RuntimeError(f"Configure runner before calling {func.__name__}")
@@ -88,6 +89,7 @@ async def run_all_events() -> None:
         Ensure that all dpy related coroutines have completed or been cancelled. If any dpy coroutines
         are currently running, this will also wait for those.
     """
+    legacy.require_unambiguous()
     while True:
         if sys.version_info[1] >= 7:
             pending = asyncio.all_tasks()
@@ -105,6 +107,7 @@ async def finish_on_command_error() -> None:
         Ensure that all dpy related coroutines have completed or been cancelled. This will only
         wait for dpy related coroutines, not any other coroutines currently running.
     """
+    legacy.require_unambiguous()
     if sys.version_info[1] >= 7:
         pending = filter(lambda x: _task_coro_name(x) == "_run_event", asyncio.all_tasks())
     else:
@@ -121,6 +124,7 @@ def get_message(peek: bool = False) -> discord.Message:
     :param peek: If true, message will not be removed from the queue
     :return: Most recent message from the queue
     """
+    legacy.require_unambiguous()
     if peek:
         message = sent_queue.peek()
     else:
@@ -136,6 +140,7 @@ def get_embed(peek: bool = False) -> discord.Embed:
     :return: Embed of the most recent message in the queue
     """
 
+    legacy.require_unambiguous()
     if peek:
         message = sent_queue.peek()
     else:
@@ -368,6 +373,7 @@ def get_config() -> RunnerConfig:
 
     :return: Current runner config
     """
+    legacy.require_unambiguous()
     if _cur_config is None:
         raise RuntimeError("Runner not configured yet")
     return _cur_config
@@ -389,6 +395,8 @@ def configure(client: discord.Client,
     """  # noqa: E501
 
     global _cur_config
+
+    legacy.require_unambiguous()
 
     if not isinstance(client, discord.Client):
         raise TypeError("Runner client must be an instance of discord.Client")

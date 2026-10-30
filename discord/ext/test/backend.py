@@ -72,7 +72,7 @@ def _get_higher_locs(num: int) -> dict[str, Any]:
 
 class FakeRequest(Response):
     """
-        A fake web response, for use with discord ``HTTPException``s
+        A fake web response, for use with discord ``HTTPException`` instances.
     """
 
     def __init__(self, status: int, reason: str):

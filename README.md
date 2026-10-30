@@ -19,3 +19,6 @@ For discord.py 2.X.X, use `dpytest>=0.6`
 ## Documentation
 
 Documentation can be found at [dpytest.readthedocs.io](https://dpytest.readthedocs.io/en/latest/), including examples and tutorials
+
+The experimental isolated session API is described in the [session tutorial](docs/tutorials/session.rst).
+The existing global helpers remain available; the tutorial lists current limitations.
